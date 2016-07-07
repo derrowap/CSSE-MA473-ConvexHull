@@ -1,0 +1,18 @@
+{
+  "name": "convexHull",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A project for Design & Analysis of Algorithms",
+  "repository": "https://github.com/derrowap/CSSE-MA473-ConvexHull",
+  "license": "MIT",
+  "devDependencies": {
+    "bower": "^1.7.7",
+    "http-server": "^0.9.0"
+  },
+  "scripts": {
+    "postinstall": "bower install",
+
+    "prestart": "npm install",
+    "start": "http-server -a localhost -p 8000 -c-1 ./app"
+  }
+}

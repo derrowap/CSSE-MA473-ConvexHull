@@ -1,0 +1,14 @@
+{
+  "name": "trominoes",
+  "description": "A project for Design & Analysis of Algorithms",
+  "version": "0.0.0",
+  "homepage": "https://github.com/derrowap/CSSE-MA473-Trominoes",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "~1.5.0",
+    "angular-route": "~1.5.0",
+    "angular-loader": "~1.5.0",
+    "angular-mocks": "~1.5.0"
+  }
+}
