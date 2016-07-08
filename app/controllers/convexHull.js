@@ -1,5 +1,28 @@
 'use strict';
 
+/*
+TODO:
+
+UI options:
+  resize non-extreme points (black points)
+  resize extreme points (red points)
+  resize lines
+  display runtime of algorithm
+
+Implement quickHull
+document in README how to add their own text file to project
+screenshots of 2 or 3 runs (not 25 points file)
+
+Document on time analysis:
+  Analyze time results
+  graph (file-size vs calculation time)
+    fit data to approprate curve Ex: O(n^3)
+  How large a file can you process in a reasonable amoutn of time with each algorithm?
+    Try running it with graphics turned off
+
+Brief document stating I did not recieve code from anyone else or share my code for this project with anyone else
+*/
+
 angular.module('app.convexHull', []).
 controller('convexHullCtrl', function($scope, $http) {
   var canvas = document.getElementById("myCanvas");
