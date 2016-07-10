@@ -1,47 +1,30 @@
 'use strict';
 
 /*
-TODO:
-
-UI options:
-  resize screen based on max of points
-
-screenshots of 2 or 3 runs (not 25 points file)
-
-Document on time analysis:
-  Analyze time results
-  graph (file-size vs calculation time)
-    fit data to approprate curve Ex: O(n^3)
-  How large a file can you process in a reasonable amoutn of time with each algorithm?
-    Try running it with graphics turned off
-
-Brief document stating I did not recieve code from anyone else or share my code for this project with anyone else
+Text inputs in order:
+  25.txt,     x: 350,  y: 500
+  250.txt,    x: 350,  y: 500
+  1250.txt,   x: 350,  y: 500
+  2500.txt,   x: 350,  y: 500
+  5000.txt,   x: 350,  y: 500
+  10000.txt,  x: 350,  y: 500
+  25000.txt,  x: 683,  y: 500
+  100000.txt, x: 683,  y: 500
+  200000.txt, x: 1003, y: 600
+  500000.txt  x: 1730, y: 998
 */
 
 angular.module('app.convexHull', []).
 controller('convexHullCtrl', function($scope, $http) {
   var canvas = document.getElementById("myCanvas");
   var ctx = canvas.getContext("2d");
-  var HEIGHT = 1080; // Height constant of the canvas
-  var WIDTH = 1920; // Width constant of the canvas
   this.nonExtremePointSize = 3; // default value of the size of non-extreme points drawn on canvas
   this.extremePointSize = 3; // default value of the size of extreme points drawn on canvas
   this.lineThickness = 1; // default value for thickness of lines of connections on the Convex Hull
 
-
-  /*
-  Text inputs in order:
-    25.txt,     x: 350,  y: 500
-    250.txt,    x: 350,  y: 500
-    1250.txt,   x: 350,  y: 500
-    2500.txt,   x: 350,  y: 500
-    5000.txt,   x: 350,  y: 500
-    10000.txt,  x: 350,  y: 500
-    25000.txt,  x: 683,  y: 500
-    100000.txt, x: 683,  y: 500
-    200000.txt, x: 1003, y: 600
-    500000.txt  x: 1730, y: 998
-  */
+  // initialize size of canvas
+  ctx.canvas.width = 900;
+  ctx.canvas.height = 300;
 
   var convexHullCtrl = this; // to allow controller variables to be referenced inside functions
   $scope.data = {}; // for text input data
@@ -56,8 +39,10 @@ controller('convexHullCtrl', function($scope, $http) {
       return data.data;
     }, function (error) {
       console.log("ERROR:", error);
-      convexHullCtrl.error = error;
-      return;
+      convexHullCtrl.error = 
+        error.statusText == "Not Found"
+        ? "File not found, make sure you added it to ./app/files/ folder and you aren't including the .txt file extension"
+        : error;
     });
   };
 
@@ -69,14 +54,18 @@ controller('convexHullCtrl', function($scope, $http) {
   this.loadFile = function() {
     convexHullCtrl.convexConnections = [];
     convexHullCtrl.runtime = null;
+
     var promise = openFile($scope.data.fileName);
     if (promise == null) { return; }
     promise.then(function (data) {
       // RegExp to get array of all points in text file
       var numbers = data.match(/[0-9]{3,4}|[0-9]{1,2}/g);
+
       var output = {};
-      // var max_x = 0;
-      // var max_y = 0;
+      var max_x = 0;
+      var max_y = 0;
+
+      // initialize all points
       for (var i = 0; i < numbers.length; i += 2) {
         output[i/2] = {
           'x': parseInt(numbers[i]),
@@ -84,16 +73,28 @@ controller('convexHullCtrl', function($scope, $http) {
           'extremePoint': false,
           'index': i/2
         };
-        // max_x = Math.max(max_x, parseInt(numbers[i]));
-        // max_y = Math.max(max_y, parseInt(numbers[i+1]));
+
+        // adjust for new max x or y coordinate
+        max_x = Math.max(max_x, parseInt(numbers[i]));
+        max_y = Math.max(max_y, parseInt(numbers[i+1]));
       }
       // console.log("max x:", max_x, "max y:", max_y);
+
+      // adjust size of canvas based on max x and y in these points
+      ctx.canvas.width = max_x + 50;
+      ctx.canvas.height = max_y + 50;
+
+      // load points in controller variable
       convexHullCtrl.points = output;
+
+      // copy points as an array
       var size = Object.keys(convexHullCtrl.points).length;
       convexHullCtrl.pointsArray = [];
       for (var i = 0; i < size; i++) {
         convexHullCtrl.pointsArray.push(convexHullCtrl.points[i]);
       }
+
+      // draw points before they are solved by algorithm
       drawPoints();
     });
   }
@@ -105,10 +106,15 @@ controller('convexHullCtrl', function($scope, $http) {
   this.startAlgorithm = function (isQuickhull) {
     convexHullCtrl.runtime = null;
     convexHullCtrl.convexConnections = [];
+    convexHullCtrl.extremePoints = {};
+
+    // don't start algorithm if there has been no points loaded in
     if ((convexHullCtrl.pointsArray == null) || (convexHullCtrl.pointsArray.length == 0)) {
       convexHullCtrl.error = "You first must load a text file of points!";
       return;
     }
+
+    // start algorithm with currently loaded points
     isQuickhull ? startQuickhull() : startConvexhull();
   };
 
@@ -125,15 +131,25 @@ controller('convexHullCtrl', function($scope, $http) {
   var drawPoints = function () {
     // clear current screen
     ctx.fillStyle = "cyan";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // Initially show this text when no points are loaded
+    if (convexHullCtrl.points == null) {
+      ctx.font = "30px Consolas";
+      ctx.strokeText("Get started by loading a text file, like '25'", 10, 50);
+      ctx.strokeText("and then solve the Convex Hull with an algorithm.", 10, 100);
+      return;
+    }
 
     // draw points
     var size = Object.keys(convexHullCtrl.points).length;
     for (var i = 0; i < size; i++) {
       if (convexHullCtrl.points[i].extremePoint) {
+        // draw an extreme point to the Convex Hull as red
         ctx.fillStyle = "red";
         ctx.fillRect(convexHullCtrl.points[i].x, convexHullCtrl.points[i].y, convexHullCtrl.extremePointSize, convexHullCtrl.extremePointSize);
       } else {
+        // draw non-extreme points as black
         ctx.fillStyle = "black";
         ctx.fillRect(convexHullCtrl.points[i].x, convexHullCtrl.points[i].y, convexHullCtrl.nonExtremePointSize, convexHullCtrl.nonExtremePointSize);
       }
@@ -146,14 +162,32 @@ controller('convexHullCtrl', function($scope, $http) {
    * user controllable line thickness.
    */
   var drawLines = function () {
+    // if there are no connections in the Convex Hull, don't do anything
+    if (convexHullCtrl.convexConnections == null) return;
+
     var size = convexHullCtrl.convexConnections.length;
     ctx.lineWidth = convexHullCtrl.lineThickness;
+
+    // draw lines for every connection
     for (var i = 0; i < size; i++) {
       ctx.beginPath();
       ctx.moveTo(convexHullCtrl.convexConnections[i][0].x, convexHullCtrl.convexConnections[i][0].y);
       ctx.lineTo(convexHullCtrl.convexConnections[i][1].x, convexHullCtrl.convexConnections[i][1].y);
       ctx.stroke();
     }
+  };
+
+  /**
+   * Adds two points as a connection to the Convex Hull.
+   * We set the points as extreme points so they are colored red.
+   * We then add it to the extremePoints list to show on the webpage.
+   */
+  var addConnection = function (p1, p2) {
+    convexHullCtrl.convexConnections.push([p1, p2]);
+    convexHullCtrl.points[p1.index].extremePoint = true;
+    convexHullCtrl.points[p2.index].extremePoint = true;
+    convexHullCtrl.extremePoints[p1.index] = {'x': p1.x, 'y': p1.y};
+    convexHullCtrl.extremePoints[p2.index] = {'x': p2.x, 'y': p2.y};
   };
 
   /**
@@ -265,6 +299,7 @@ controller('convexHullCtrl', function($scope, $http) {
       }
     }
 
+    var runtimeWithoutSort = 0 - (new Date().getTime());
     // two outer-most points
     var q1 = points[0];
     var q2 = points[points.length-1];
@@ -276,10 +311,14 @@ controller('convexHullCtrl', function($scope, $http) {
     quickhull(partitioned.left, q1, q2);  // upper hull
     quickhull(partitioned.right, q2, q1); // lower hull
 
+    runtimeWithoutSort += new Date().getTime();
+
     // end calculation of runtime
     runtime += new Date().getTime();
     console.log("Runtime of Quickhull:", runtime, "ms");
     convexHullCtrl.runtime = runtime;
+
+    console.log("Runtime of Quickhull without Sort:", runtimeWithoutSort, "ms");
 
     drawPoints();
     drawLines();
@@ -295,9 +334,7 @@ controller('convexHullCtrl', function($scope, $http) {
   var quickhull = function (S, q1, q2) {
     // Add to convexConnections if S is empty
     if (S.length == 0) {
-      convexHullCtrl.convexConnections.push([q1, q2]);
-      convexHullCtrl.points[q1.index].extremePoint = true;
-      convexHullCtrl.points[q2.index].extremePoint = true;
+      addConnection(q1, q2);
       return;
     }
 
@@ -372,14 +409,19 @@ controller('convexHullCtrl', function($scope, $http) {
 
           if (comparison == c) {
             // they are on the same line
-            if ((points[k].x > Math.max(point1.x, point2.x)) || (points[k].x < Math.min(point1.x, point2.x))) {
-              // this point is outside the x range of point1 and point2, cannot be a connection in the Convex Hull
+            if (points[k].x != point1.x && points[k].x != point2.x) {
+              if ((points[k].x > Math.max(point1.x, point2.x)) || (points[k].x < Math.min(point1.x, point2.x))) {
+                // this point is outside the x range of point1 and point2, cannot be a connection in the Convex Hull
+                isGreater = 'fail';
+                break;
+              }
+            } else if ((points[k].y > Math.max(point1.y, point2.y)) || (points[k].y < Math.min(point1.y, point2.y))) {
+              // this line is vertical and this point's y is outside the y range of point1 and point2, cannot be a connection
               isGreater = 'fail';
               break;
-            } else {
-              // this point is inside the x range of point1 and point2, this is okay, continue
-              continue;
             }
+            // this point is inside the range of line point1 & point2, this is okay so continue
+            continue;
           } else if (isGreater == null) {
             // if we have not yet set which side the initial point is on
             isGreater = comparison > c;
@@ -393,9 +435,7 @@ controller('convexHullCtrl', function($scope, $http) {
           // All points in the set are on the same side of the line that makes up the connection of point1 and point2.
           // This is a connection on the Convex Hull, so make them extreme points and record this connection.
 
-          convexHullCtrl.convexConnections.push([point1, point2]);
-          convexHullCtrl.points[point1.index].extremePoint = true;
-          convexHullCtrl.points[point2.index].extremePoint = true;
+          addConnection(point1, point2);
         }
       }
     }
@@ -426,7 +466,7 @@ controller('convexHullCtrl', function($scope, $http) {
       drawPoints();
       drawLines();
     },
-    true
+    true // required in order to use one $watch for these 3 values
   );
 
 });

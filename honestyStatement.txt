@@ -1,0 +1,3 @@
+I did not receive code from anyone else and did not share my code for this 
+project with anyone else. I have hosted it on Git, but it will remain private
+until the final turn-in date passes for this project.
