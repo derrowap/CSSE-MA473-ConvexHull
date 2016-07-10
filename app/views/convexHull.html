@@ -1,15 +1,25 @@
 <div class="container-fluid" ng-controller="convexHullCtrl as convexHullCtrl">
+
+  <!-- Page Header -->
   <div class="header col-xs-12">
     Convex Hull
     <div class="error" ng-show="convexHullCtrl.error != null">{{convexHullCtrl.error}}</div>
   </div>
+  <!-- /Page Header -->
+
+  <!-- Page Contents -->
   <div class="content col-xs-12">
     <div class="controls col-xs-12 p-0">
+
+      <!-- Load file input -->
       <div class="col-xs-3">
         Enter an input file name (don't include .txt):<br>
         <input type="text" id="fileInput" ng-model="data.fileName" placeholder="Example: 25">
         <input type="submit" id="fileSubmit" value="Load" ng-click="convexHullCtrl.loadFile()">
       </div>
+      <!-- /Load file input -->
+
+      <!-- Buttons for starting algorithm -->
       <div class="col-xs-2 text-center">
         Choose a solving algorithm:<br>
         <div class="btn-group" role="group">
@@ -17,6 +27,9 @@
           <button class="btn btn-secondary" ng-click="convexHullCtrl.startAlgorithm(true)">Quickhull</button>
         </div>
       </div>
+      <!-- /Buttons for starting algorithm -->
+
+      <!-- Change Size of canvas components -->
       <div class="col-xs-2 p-0">
         Change size of non-extreme points:
         <input type="range" min="0" max="10" defaultValue="3" ng-model="convexHullCtrl.nonExtremePointSize">
@@ -29,21 +42,39 @@
         Change thickness of lines:
         <input type="range" min="0" max="10" defaultValue="1" ng-model="convexHullCtrl.lineThickness">
       </div>
+      <!-- /Change Size of canvas components -->
+
     </div>
+
     <div class="results col-xs-12 p-0" ng-show="convexHullCtrl.runtime != null">
+
+      <!-- Runtime of algorithm -->
       <div class="runtime col-xs-3">
         Runtime: {{convexHullCtrl.runtime}}ms
       </div>
+      <!-- /Runtime of algorithm -->
+
+      <!-- List out Extreme Points of Convex Hull -->
       <div class="points col-xs-9">
         Convex Hull Points:<br>
         <span ng-repeat="(key, point) in convexHullCtrl.extremePoints">
           ({{point.x}}, {{point.y}})<span ng-if="!$last">,</span>
         </span>
       </div>
+      <!-- /List out Extreme Points of Convex Hull -->
+
     </div>
+
+    <!-- Canvas to draw all graphics on -->
     <canvas id="myCanvas"></canvas>
+
   </div>
+  <!-- /Page Contents -->
+
+  <!-- Page Footer -->
   <div class="footer col-xs-12">
     <a href="https://github.com/derrowap/CSSE-MA473-ConvexHull">Open source programmed by Austin Derrow-Pinion</a>
   </div>
+  <!-- /Page Footer -->
+  
 </div>
