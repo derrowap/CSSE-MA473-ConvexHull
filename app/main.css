@@ -9,17 +9,37 @@
     color: red; }
 
 .content {
-  text-align: center; }
+  text-align: center;
+  padding: 0; }
+  .content > canvas {
+    margin: 10px; }
   .content > .controls { 
     text-align: left;
     margin-bottom: 10px; }
+    .content > .controls > div {
+      text-align: center; }
     .content > .controls button {
       padding: 5px;
       margin: 0;
       border: 1px solid black; }
+    .content > .controls #fileInput {
+      width: 200px;
+      height: 20px;
+      padding-right: 50px; }
+    .content > .controls #fileSubmit {
+      margin-left: -50px;
+      height: 20px;
+      width: 50px;
+      background: blue;
+      color: white;
+      border: 0;
+      -webkit-appearance: none; }
 
 .footer {
   text-align: center;
   font-size: 18px;
   color: blue;
   padding: 20px 0; }
+
+.p-0 {
+  padding: 0; }
