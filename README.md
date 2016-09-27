@@ -22,3 +22,6 @@ Now you are able to type the name of the file on the webpage to load it.
 5. ./app/views/convexHull.html is the webpage components.
 6. ./app/files/ is the folder where all the text file inputs of points are located.
 7. ./app/controllers/convexHull.js contains the controller and JavaScript code that implements the algorithms and everything else.
+
+
+![alt tag](https://raw.githubusercontent.com/derrowap/CSSE-MA473-ConvexHull/master/screenshots/500000.PNG)
